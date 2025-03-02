@@ -20,9 +20,11 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
+import { AttendeeComponent } from './pages/attendee/attendee.component';
+
 @NgModule({
     declarations: [
-        AppComponent, NotfoundComponent, MeetingComponent
+        AppComponent, NotfoundComponent, MeetingComponent,AttendeeComponent
     ],
     imports: [
         AppRoutingModule,
