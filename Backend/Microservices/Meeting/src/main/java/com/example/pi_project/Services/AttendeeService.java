@@ -59,4 +59,22 @@ import java.util.Optional;
             // Fetch attendees by meeting ID
             return attendeeRepository.findByMeetingId(meeting.getId());
         }
+        // Méthode pour supprimer un participant par nom
+        public void deleteAttendeeByName(String name) {
+            if (!attendeeRepository.existsByName(name)) {
+                throw new RuntimeException("Attendee not found with name: " + name);
+            }
+            attendeeRepository.deleteByName(name);
+        }
+        public Attendee updateAttendeeByName(String name, Attendee updatedAttendee) {
+            Attendee existingAttendee = attendeeRepository.findByName(name)
+                    .orElseThrow(() -> new RuntimeException("Attendee not found with name: " + name));
+
+            // Mettre à jour les champs de l'attendee existant
+            existingAttendee.setName(updatedAttendee.getName());
+            existingAttendee.setEmail(updatedAttendee.getEmail());
+
+            // Sauvegarder les modifications
+            return attendeeRepository.save(existingAttendee);
+        }
     }

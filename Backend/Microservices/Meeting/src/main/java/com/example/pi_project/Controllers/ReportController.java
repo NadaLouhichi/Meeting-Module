@@ -10,16 +10,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/reports")
 public class ReportController {
+
     @Autowired
     private ReportService reportService;
 
     @PostMapping
     public ResponseEntity<Report> createReport(@RequestBody Report report) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(reportService.createReport(report));
+        Report createdReport = reportService.createReport(report);
+        return ResponseEntity.ok(createdReport);
     }
 
-    @GetMapping("/meeting/{meetingId}")
-    public ResponseEntity<List<Report>> getReportsByMeeting(@PathVariable Long meetingId) {
-        return ResponseEntity.ok(reportService.getReportsByMeeting(meetingId));
+    @GetMapping("/by-meeting-title")
+    public ResponseEntity<List<Report>> getReportsByMeetingTitle(@RequestParam String meetingTitle) {
+        List<Report> reports = reportService.getReportsByMeetingTitle(meetingTitle);
+        return ResponseEntity.ok(reports);
     }
 }

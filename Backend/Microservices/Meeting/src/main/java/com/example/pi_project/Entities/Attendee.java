@@ -1,6 +1,7 @@
 package com.example.pi_project.Entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -10,8 +11,15 @@ public class Attendee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotBlank(message = "Le nom ne peut pas être vide")
+    @Size(max = 25, message = "Le nom ne peut pas dépasser 50 caractères")
     private String name;
-    private String role;
+    /*@NotBlank(message = "Le rôle ne peut pas être vide")
+    @Size(max = 30, message = "Le rôle ne peut pas dépasser 50 caractères")
+    private String role;*/
+    @NotBlank(message = "L'email ne peut pas être vide")
+    @Email(message = "L'email doit être valide")
+    @Size(max = 40, message = "L'email ne peut pas dépasser 35 caractères")
     private String email;
     @ManyToOne
 

@@ -1,0 +1,48 @@
+<div class="p-fluid">
+    <h1>Add Meeting</h1>
+    <form (ngSubmit)="onSubmit()">
+      <div class="p-field">
+        <label for="title">Title</label>
+        <input id="title" type="text" pInputText [(ngModel)]="meeting.title" name="title" required>
+      </div>
+      <div class="p-field">
+        <label for="date">Date</label>
+        <p-calendar id="date" [(ngModel)]="meeting.date" name="date" [showTime]="true" required></p-calendar>
+      </div>
+      <div class="p-field">
+        <label for="location">Location</label>
+        <input id="location" type="text" pInputText [(ngModel)]="meeting.location" name="location" required>
+      </div>
+      <div class="p-field">
+        <label for="description">Description</label>
+        <textarea id="description" pInputTextarea [(ngModel)]="meeting.description" name="description"></textarea>
+      </div>
+      <button type="submit" pButton label="Save"></button>
+    </form>
+  
+    <h2>Meetings List</h2>
+    <p-table [value]="meetings">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Title</th>
+          <th>Date</th>
+          <th>Location</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-meeting>
+        <tr>
+          <td>{{ meeting.title }}</td>
+          <td>{{ meeting.date | date: 'medium' }}</td>
+          <td>{{ meeting.location }}</td>
+          <td>{{ meeting.description }}</td>
+          <td>
+            <button pButton type="button" icon="pi pi-pencil" class="p-button-warning" (click)="onEdit(meeting)"></button>
+            <button pButton type="button" icon="pi pi-trash" class="p-button-danger" (click)="onDelete(meeting)"></button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  

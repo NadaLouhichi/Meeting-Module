@@ -14,8 +14,12 @@ import java.util.Optional;
 public interface MeetingRepository extends JpaRepository<Meeting, Long> {
     @Query("SELECT m FROM Meeting m WHERE DATE(m.date) = :date")
     List<Meeting> findByDate(@Param("date") LocalDate date);
-    List<Meeting> findByLocationIgnoreCase(String location);
-    Optional<Meeting> findByTitleAndDate(String title, LocalDateTime date);
+    @Query("SELECT m FROM Meeting m WHERE LOWER(REPLACE(m.location, ' ', '')) = LOWER(REPLACE(:location, ' ', ''))")
+    List<Meeting> findByLocationIgnoreCaseAndSpaces(@Param("location") String location);
+    @Query("SELECT m FROM Meeting m WHERE LOWER(REPLACE(m.title, ' ', '')) = LOWER(REPLACE(:title, ' ', '')) AND DATE(m.date) = :date")
+    Optional<Meeting> findByTitleAndDate(@Param("title") String title, @Param("date") LocalDate date);
 
-  List<Meeting> findByTitle(String meetingTitle);
+    @Query("SELECT m FROM Meeting m WHERE LOWER(REPLACE(m.title, ' ', '')) = LOWER(REPLACE(:title, ' ', ''))")
+    List<Meeting> findByTitle(String title);
+
 }
