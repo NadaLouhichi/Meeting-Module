@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MeetingService } from '../../services/meeting.service'; // Import the service
-
+import { futureOrPresentDateValidator } from '../../Validators/custom-validators';
 @Component({
   selector: 'app-meeting',
   templateUrl: './meeting.component.html', // Ensure this path is correct
@@ -18,6 +18,7 @@ export class MeetingComponent implements OnInit {
   isEditMode: boolean = false; // To track if we are in edit mode
   editMeetingId: number | null = null; // To store the ID of the meeting being edited
 
+  futureOrPresentDateValidator = futureOrPresentDateValidator;
   constructor(private meetingService: MeetingService) { } // Inject the service
 
   ngOnInit(): void {
@@ -47,8 +48,7 @@ export class MeetingComponent implements OnInit {
           this.loadMeetings(); // Reload meetings after updating
           this.resetForm(); // Reset the form
         }, error => {
-          console.error('Error updating meeting', error);
-          alert('Error updating meeting!');
+          this.handleError(error)
         });
     } else {
       // If not in edit mode, call the create method
@@ -59,12 +59,26 @@ export class MeetingComponent implements OnInit {
           this.loadMeetings(); // Reload meetings after adding a new one
           this.resetForm(); // Reset the form
         }, error => {
-          console.error('Error adding meeting', error);
-          alert('Error adding meeting!');
+          this.handleError(error);
         });
     }
   }
+  handleError(error: any) {
+    if (error.error && error.error.errors) {
+      const errors = error.error.errors;
+      let errorMessage = 'Validation errors:\n';
 
+      for (const field in errors) {
+        if (errors.hasOwnProperty(field)) {
+          errorMessage += `${field}: ${errors[field].join(', ')}\n`;
+        }
+      }
+
+      alert(errorMessage); // Display custom error messages
+    } else {
+      alert('An unexpected error occurred. Please try again.'); // Generic error message
+    }
+  }
   // Edit a meeting
   onEdit(meeting: any) {
     this.isEditMode = true;

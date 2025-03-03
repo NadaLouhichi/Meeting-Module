@@ -1,48 +1,88 @@
 <div class="p-fluid">
-    <h1>Add Meeting</h1>
-    <form (ngSubmit)="onSubmit()">
-      <div class="p-field">
-        <label for="title">Title</label>
-        <input id="title" type="text" pInputText [(ngModel)]="meeting.title" name="title" required>
-      </div>
-      <div class="p-field">
-        <label for="date">Date</label>
-        <p-calendar id="date" [(ngModel)]="meeting.date" name="date" [showTime]="true" required></p-calendar>
-      </div>
-      <div class="p-field">
-        <label for="location">Location</label>
-        <input id="location" type="text" pInputText [(ngModel)]="meeting.location" name="location" required>
-      </div>
-      <div class="p-field">
-        <label for="description">Description</label>
-        <textarea id="description" pInputTextarea [(ngModel)]="meeting.description" name="description"></textarea>
-      </div>
-      <button type="submit" pButton label="Save"></button>
-    </form>
-  
-    <h2>Meetings List</h2>
-    <p-table [value]="meetings">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Title</th>
-          <th>Date</th>
-          <th>Location</th>
-          <th>Description</th>
-          <th>Actions</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-meeting>
-        <tr>
-          <td>{{ meeting.title }}</td>
-          <td>{{ meeting.date | date: 'medium' }}</td>
-          <td>{{ meeting.location }}</td>
-          <td>{{ meeting.description }}</td>
-          <td>
-            <button pButton type="button" icon="pi pi-pencil" class="p-button-warning" (click)="onEdit(meeting)"></button>
-            <button pButton type="button" icon="pi pi-trash" class="p-button-danger" (click)="onDelete(meeting)"></button>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </div>
-  
+  <h1>Add Meeting</h1>
+  <form (ngSubmit)="onSubmit()" #meetingForm="ngForm">
+    <!-- Title Field -->
+    <div class="p-field">
+      <label for="title">Title</label>
+      <input id="title" type="text" pInputText [(ngModel)]="meeting.title" name="title" required maxlength="35">
+      <small *ngIf="meetingForm.controls['title']?.errors?.['required'] && meetingForm.controls['title']?.touched" class="p-error">
+        Title is required.
+      </small>
+      <small *ngIf="meetingForm.controls['title']?.errors?.['maxlength'] && meetingForm.controls['title']?.touched" class="p-error">
+        Title cannot exceed 35 characters.
+      </small>
+    </div>
+
+    <!-- Date Field -->
+    <div class="p-field">
+      <label for="date">Date</label>
+      <p-calendar 
+        id="date" 
+        [(ngModel)]="meeting.date" 
+        name="date" 
+        [showTime]="true" 
+        required 
+        [ngModelOptions]="{ updateOn: 'blur', validators: futureOrPresentDateValidator() }">
+      </p-calendar>
+      <small *ngIf="meetingForm.controls['date']?.errors?.['required'] && meetingForm.controls['date']?.touched" class="p-error">
+        Date is required.
+      </small>
+      <small *ngIf="meetingForm.controls['date']?.errors?.['pastDate'] && meetingForm.controls['date']?.touched" class="p-error">
+        Date must be today or in the future.
+      </small>
+    </div>
+
+    <!-- Location Field -->
+    <div class="p-field">
+      <label for="location">Location</label>
+      <input id="location" type="text" pInputText [(ngModel)]="meeting.location" name="location" required maxlength="35">
+      <small *ngIf="meetingForm.controls['location']?.errors?.['required'] && meetingForm.controls['location']?.touched" class="p-error">
+        Location is required.
+      </small>
+      <small *ngIf="meetingForm.controls['location']?.errors?.['maxlength'] && meetingForm.controls['location']?.touched" class="p-error">
+        Location cannot exceed 35 characters.
+      </small>
+    </div>
+
+    <!-- Description Field -->
+    <div class="p-field">
+      <label for="description">Description</label>
+      <textarea id="description" pInputTextarea [(ngModel)]="meeting.description" name="description" required maxlength="65"></textarea>
+      <small *ngIf="meetingForm.controls['description']?.errors?.['required'] && meetingForm.controls['description']?.touched" class="p-error">
+        Description is required.
+      </small>
+      <small *ngIf="meetingForm.controls['description']?.errors?.['maxlength'] && meetingForm.controls['description']?.touched" class="p-error">
+        Description cannot exceed 65 characters.
+      </small>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" pButton label="Save" [disabled]="meetingForm.invalid"></button>
+  </form>
+
+  <!-- Meetings List -->
+  <h2>Meetings List</h2>
+  <p-table [value]="meetings">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Title</th>
+        <th>Date</th>
+        <th>Location</th>
+        <th>Description</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-meeting>
+      <tr>
+        <td>{{ meeting.title }}</td>
+        <td>{{ meeting.date | date: 'medium' }}</td>
+        <td>{{ meeting.location }}</td>
+        <td>{{ meeting.description }}</td>
+        <td>
+          <button pButton type="button" icon="pi pi-pencil" class="p-button-warning" (click)="onEdit(meeting)"></button>
+          <button pButton type="button" icon="pi pi-trash" class="p-button-danger" (click)="onDelete(meeting)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
