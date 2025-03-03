@@ -44,6 +44,7 @@ import java.util.Optional;
             // Save the attendee
             return attendeeRepository.save(attendee);
         }
+
         public List<Attendee> getAttendeesByMeetingTitle(String meetingTitle) {
             // Find the meeting by title
             List<Meeting> meetings = meetingRepository.findByTitle(meetingTitle);
@@ -60,12 +61,8 @@ import java.util.Optional;
             return attendeeRepository.findByMeetingId(meeting.getId());
         }
         // Méthode pour supprimer un participant par nom
-        public void deleteAttendeeByName(String name) {
-            if (!attendeeRepository.existsByName(name)) {
-                throw new RuntimeException("Attendee not found with name: " + name);
-            }
-            attendeeRepository.deleteByName(name);
-        }
+
+
         public Attendee updateAttendeeByName(String name, Attendee updatedAttendee) {
             Attendee existingAttendee = attendeeRepository.findByName(name)
                     .orElseThrow(() -> new RuntimeException("Attendee not found with name: " + name));
@@ -76,5 +73,14 @@ import java.util.Optional;
 
             // Sauvegarder les modifications
             return attendeeRepository.save(existingAttendee);
+        }
+
+        public void deleteAttendeeByName(String name) {
+            // Check if the attendee exists
+            Attendee attendee = attendeeRepository.findByNameIgnoreCase(name)
+                    .orElseThrow(() -> new RuntimeException("Attendee not found with name: " + name));
+
+            // Delete the attendee
+            attendeeRepository.delete(attendee);
         }
     }
