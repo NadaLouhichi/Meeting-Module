@@ -39,17 +39,35 @@ export class AttendeeComponent implements OnInit {
   // Add an attendee
   onSubmit() {
     this.attendeeService.addAttendee(this.meetingTitle, this.attendee)
-      .subscribe(response => {
-        console.log('Attendee added successfully', response);
-        alert('Attendee added successfully!');
-        this.loadAttendees(); // Reload attendees after adding
-        this.resetForm(); // Reset the form
-      }, error => {
-        console.error('Error adding attendee', error);
-        alert('Error adding attendee!');
-      });
+      .subscribe(
+        (response) => {
+          console.log('Attendee added successfully', response);
+          alert('Attendee added successfully!');
+          this.loadAttendees(); // Reload attendees after adding
+          this.resetForm(); // Reset the form
+        },
+        (error) => {
+          this.handleError(error); // Handle validation errors
+        }
+      );
   }
+// Handle validation errors
+handleError(error: any) {
+  if (error.error && error.error.errors) {
+    const errors = error.error.errors;
+    let errorMessage = 'Validation errors:\n';
 
+    for (const field in errors) {
+      if (errors.hasOwnProperty(field)) {
+        errorMessage += `${field}: ${errors[field].join(', ')}\n`;
+      }
+    }
+
+    alert(errorMessage); // Display custom error messages
+  } else {
+    alert('An unexpected error occurred. Please try again.'); // Generic error message
+  }
+}
   // Delete an attendee
   onDelete(name: string) {
     if (confirm('Are you sure you want to delete this attendee?')) {
