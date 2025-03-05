@@ -29,4 +29,17 @@ export class MeetingService {
   deleteMeetingById(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+   // Export meetings to PDF
+   exportMeetingsToPdf(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export/pdf`, {
+      responseType: 'blob', // Specify the response type as Blob (binary data)
+    });
+  }
+
+  // Export meetings to Excel
+  exportMeetingsToExcel(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export/excel`, {
+      responseType: 'blob', // Specify the response type as Blob (binary data)
+    });
+  }
 }

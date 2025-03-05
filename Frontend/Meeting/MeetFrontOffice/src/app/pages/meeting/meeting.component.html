@@ -1,4 +1,9 @@
 <div class="p-fluid">
+  <div>
+    <!-- Add buttons for exporting -->
+    <button (click)="onExportPdf()">Export to PDF</button>
+    <button (click)="onExportExcel()">Export to Excel</button>
+  </div>
   <h1>Add Meeting</h1>
   <form (ngSubmit)="onSubmit()" #meetingForm="ngForm">
     <!-- Title Field -->

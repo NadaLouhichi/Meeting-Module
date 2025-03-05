@@ -112,4 +112,41 @@ export class MeetingComponent implements OnInit {
     this.isEditMode = false;
     this.editMeetingId = null;
   }
+  // Export meetings to PDF
+  onExportPdf() {
+    this.meetingService.exportMeetingsToPdf().subscribe(
+      (data: Blob) => {
+        const blob = new Blob([data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'meetings.pdf';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      (error) => {
+        console.error('Error exporting PDF', error);
+        alert('Error exporting PDF!');
+      }
+    );
+  }
+
+  // Export meetings to Excel
+  onExportExcel() {
+    this.meetingService.exportMeetingsToExcel().subscribe(
+      (data: Blob) => {
+        const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'meetings.xlsx';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      (error) => {
+        console.error('Error exporting Excel', error);
+        alert('Error exporting Excel!');
+      }
+    );
+  }
 }
