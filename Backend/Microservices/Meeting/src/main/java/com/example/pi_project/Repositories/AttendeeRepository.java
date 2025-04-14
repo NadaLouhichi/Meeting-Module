@@ -22,4 +22,8 @@ public interface AttendeeRepository extends JpaRepository<Attendee, Long> {
     void deleteByName(String name);
 
     Optional<Attendee> findByNameIgnoreCase(String name);
+    long countBySafetyBriefingCompleted(boolean completed);
+    @Query("SELECT FUNCTION('DATE_FORMAT', m.date, '%Y-%m') as month, COUNT(m) as count " +
+            "FROM Meeting m GROUP BY FUNCTION('DATE_FORMAT', m.date, '%Y-%m')")
+    List<Object[]> countMeetingsByMonth();
 }

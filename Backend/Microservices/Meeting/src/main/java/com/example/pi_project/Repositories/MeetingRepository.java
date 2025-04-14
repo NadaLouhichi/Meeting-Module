@@ -22,4 +22,7 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
 
     @Query("SELECT m FROM Meeting m WHERE LOWER(REPLACE(m.title, ' ', '')) = LOWER(REPLACE(:title, ' ', ''))")
     List<Meeting> findByTitle(String title);
+    List<Meeting> findAllByDateBetween(LocalDateTime start, LocalDateTime end);
+    List<Meeting> findTop5ByOrderByDateDesc();
+
 }
