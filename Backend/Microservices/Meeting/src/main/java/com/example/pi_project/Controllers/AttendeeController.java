@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 @RestController
 @RequestMapping("/attendees")
 @CrossOrigin(origins = "http://localhost:4200")
@@ -20,8 +19,8 @@ public class AttendeeController {
 
     @PostMapping("/{meetingTitle}")
     public ResponseEntity<Attendee> addAttendee(
-            @PathVariable String meetingTitle, // Pass meetingTitle as a path variable
-            @Valid @RequestBody Attendee attendee) { // Pass attendee as the request body
+            @PathVariable String meetingTitle,
+            @Valid @RequestBody Attendee attendee) {
         Attendee savedAttendee = attendeeService.addAttendee(meetingTitle, attendee);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedAttendee);
     }
@@ -36,7 +35,7 @@ public class AttendeeController {
     @DeleteMapping("/name/{name}")
     public ResponseEntity<Void> deleteAttendeeByName(@PathVariable String name) {
         attendeeService.deleteAttendeeByName(name);
-        return ResponseEntity.noContent().build(); // Returns HTTP 204 No Content
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/name/{name}")
@@ -44,6 +43,6 @@ public class AttendeeController {
             @PathVariable String name,
             @Valid @RequestBody Attendee updatedAttendee) {
         Attendee attendee = attendeeService.updateAttendeeByName(name, updatedAttendee);
-        return ResponseEntity.ok(attendee); // Retourne un statut 200 OK avec l'attendee mis à jour
+        return ResponseEntity.ok(attendee);
     }
 }

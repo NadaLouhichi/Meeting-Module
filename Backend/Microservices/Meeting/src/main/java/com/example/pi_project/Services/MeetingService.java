@@ -19,42 +19,28 @@ public class MeetingService {
         return meetingRepository.save(meeting);
     }
 
-
     public List<Meeting> getAllMeetings() {
         return meetingRepository.findAll();
     }
 
-
-
     public List<Meeting> getMeetingsByLocation(String location) {
-        // Normalize the location parameter
         String normalizedLocation = normalizeLocation(location);
-
-        // Query the repository with the normalized location
         return meetingRepository.findByLocationIgnoreCaseAndSpaces(normalizedLocation);
     }
 
     private String normalizeLocation(String location) {
-        // Convert to lowercase and remove spaces
         return location.toLowerCase().replaceAll("\\s", "");
     }
+
     public List<Meeting> getMeetingsByDate(LocalDate date) {
-        // Retrieve all meetings with the given date (ignores time part)
         return meetingRepository.findByDate(date);
     }
-
-
 
     public Meeting updateMeetingByTitleAndDate(String title, LocalDate date, Meeting meetingDetails) {
         Meeting meeting = meetingRepository.findByTitleAndDate(title, date)
                 .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with title: " + title + " and date: " + date));
 
-        // Update the meeting details
-        meeting.setTitle(meetingDetails.getTitle());
-        meeting.setDate(meetingDetails.getDate());
-        meeting.setLocation(meetingDetails.getLocation());
-        meeting.setDescription(meetingDetails.getDescription());
-
+        updateMeetingFields(meeting, meetingDetails);
         return meetingRepository.save(meeting);
     }
 
@@ -63,16 +49,12 @@ public class MeetingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with title: " + title + " and date: " + date));
         meetingRepository.delete(meeting);
     }
+
     public Meeting updateMeetingById(Long id, Meeting meetingDetails) {
         Meeting meeting = meetingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with id: " + id));
 
-        // Update the meeting details
-        meeting.setTitle(meetingDetails.getTitle());
-        meeting.setDate(meetingDetails.getDate());
-        meeting.setLocation(meetingDetails.getLocation());
-        meeting.setDescription(meetingDetails.getDescription());
-
+        updateMeetingFields(meeting, meetingDetails);
         return meetingRepository.save(meeting);
     }
 
@@ -80,5 +62,17 @@ public class MeetingService {
         Meeting meeting = meetingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with id: " + id));
         meetingRepository.delete(meeting);
+    }
+
+    // Helper method to update meeting fields
+    private void updateMeetingFields(Meeting meeting, Meeting meetingDetails) {
+        meeting.setTitle(meetingDetails.getTitle());
+        meeting.setDate(meetingDetails.getDate());
+        meeting.setDuration(meetingDetails.getDuration());
+        meeting.setLocation(meetingDetails.getLocation());
+        meeting.setAddress(meetingDetails.getAddress());
+        meeting.setFrequency(meetingDetails.getFrequency());
+        meeting.setType(meetingDetails.getType());
+        meeting.setDescription(meetingDetails.getDescription());
     }
 }

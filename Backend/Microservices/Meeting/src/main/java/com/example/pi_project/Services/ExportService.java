@@ -25,29 +25,47 @@ public class ExportService {
             throw new IllegalStateException("No meetings available for export.");
         }
 
-
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Meetings");
 
-        // Create header row
+        // Create header row with all relevant fields
         Row headerRow = sheet.createRow(0);
-        headerRow.createCell(0).setCellValue("Title");
-        headerRow.createCell(1).setCellValue("Date");
-        headerRow.createCell(2).setCellValue("Location");
-        headerRow.createCell(3).setCellValue("Description");
+        String[] headers = {
+                "Title", "Date", "Duration (min)", "Location",
+                "Street", "City", "Country", "Postal Code",
+                "Frequency", "Type", "Description"
+        };
+
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+        }
 
         // Fill data rows
         int rowNum = 1;
         for (Meeting meeting : meetings) {
             Row row = sheet.createRow(rowNum++);
+
+            // Basic meeting info
             row.createCell(0).setCellValue(meeting.getTitle());
             row.createCell(1).setCellValue(meeting.getDate().toString());
-            row.createCell(2).setCellValue(meeting.getLocation());
-            row.createCell(3).setCellValue(meeting.getDescription());
+            row.createCell(2).setCellValue(meeting.getDuration());
+            row.createCell(3).setCellValue(meeting.getLocation());
+
+            // Address info
+            Meeting.Address address = meeting.getAddress();
+            row.createCell(4).setCellValue(address != null ? address.getStreet() : "");
+            row.createCell(5).setCellValue(address != null ? address.getCity() : "");
+            row.createCell(6).setCellValue(address != null ? address.getCountry() : "");
+            row.createCell(7).setCellValue(address != null ? address.getPostalCode() : "");
+
+            // Meeting details
+            row.createCell(8).setCellValue(meeting.getFrequency() != null ? meeting.getFrequency().getDisplayName() : "");
+            row.createCell(9).setCellValue(meeting.getType() != null ? meeting.getType().getDisplayName() : "");
+            row.createCell(10).setCellValue(meeting.getDescription() != null ? meeting.getDescription() : "");
         }
 
         // Auto-size columns
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < headers.length; i++) {
             sheet.autoSizeColumn(i);
         }
 
@@ -59,35 +77,60 @@ public class ExportService {
     }
 
     // Export to PDF
-    public ByteArrayOutputStream exportMeetingsToPdf() throws DocumentException {
+    public ByteArrayOutputStream exportMeetingsToPdf() throws DocumentException, IOException {
         List<Meeting> meetings = meetingRepository.findAll();
         if (meetings.isEmpty()) {
             throw new IllegalStateException("No meetings available for export.");
         }
-        Document document = new Document();
+
+        Document document = new Document(PageSize.A4.rotate()); // Use landscape for more columns
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PdfWriter.getInstance(document, outputStream);
 
         document.open();
 
-        // Add a table with 4 columns
-        PdfPTable table = new PdfPTable(4);
+        // Create a table with all columns
+        PdfPTable table = new PdfPTable(11); // Number of columns
         table.setWidthPercentage(100);
         table.setSpacingBefore(10f);
         table.setSpacingAfter(10f);
 
+        // Set column widths (adjust as needed)
+        float[] columnWidths = {2f, 2f, 1f, 2f, 2f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 3f};
+        table.setWidths(columnWidths);
+
         // Add table headers
         table.addCell("Title");
         table.addCell("Date");
+        table.addCell("Duration");
         table.addCell("Location");
+        table.addCell("Street");
+        table.addCell("City");
+        table.addCell("Country");
+        table.addCell("Postal Code");
+        table.addCell("Frequency");
+        table.addCell("Type");
         table.addCell("Description");
 
         // Add meeting data to the table
         for (Meeting meeting : meetings) {
+            // Basic meeting info
             table.addCell(meeting.getTitle());
             table.addCell(meeting.getDate().toString());
+            table.addCell(String.valueOf(meeting.getDuration()));
             table.addCell(meeting.getLocation());
-            table.addCell(meeting.getDescription());
+
+            // Address info
+            Meeting.Address address = meeting.getAddress();
+            table.addCell(address != null ? address.getStreet() : "");
+            table.addCell(address != null ? address.getCity() : "");
+            table.addCell(address != null ? address.getCountry() : "");
+            table.addCell(address != null ? address.getPostalCode() : "");
+
+            // Meeting details
+            table.addCell(meeting.getFrequency() != null ? meeting.getFrequency().getDisplayName() : "");
+            table.addCell(meeting.getType() != null ? meeting.getType().getDisplayName() : "");
+            table.addCell(meeting.getDescription() != null ? meeting.getDescription() : "");
         }
 
         document.add(table);

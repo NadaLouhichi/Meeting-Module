@@ -9,17 +9,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
 @Repository
 public interface MeetingRepository extends JpaRepository<Meeting, Long> {
     @Query("SELECT m FROM Meeting m WHERE DATE(m.date) = :date")
     List<Meeting> findByDate(@Param("date") LocalDate date);
+
     @Query("SELECT m FROM Meeting m WHERE LOWER(REPLACE(m.location, ' ', '')) = LOWER(REPLACE(:location, ' ', ''))")
     List<Meeting> findByLocationIgnoreCaseAndSpaces(@Param("location") String location);
+
     @Query("SELECT m FROM Meeting m WHERE LOWER(REPLACE(m.title, ' ', '')) = LOWER(REPLACE(:title, ' ', '')) AND DATE(m.date) = :date")
     Optional<Meeting> findByTitleAndDate(@Param("title") String title, @Param("date") LocalDate date);
 
     @Query("SELECT m FROM Meeting m WHERE LOWER(REPLACE(m.title, ' ', '')) = LOWER(REPLACE(:title, ' ', ''))")
     List<Meeting> findByTitle(String title);
-
 }
