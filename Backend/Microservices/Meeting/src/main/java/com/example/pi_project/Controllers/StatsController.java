@@ -20,7 +20,7 @@ public class StatsController {
     public ResponseEntity<Map<String, Object>> getFullReport() {
         return ResponseEntity.ok(statsService.getFullStatisticsReport());
     }
-/// To redo or verify
+
     @GetMapping("/meetings-per-month")
     public ResponseEntity<Map<String, Long>> getMeetingsPerMonth() {
         return ResponseEntity.ok(statsService.getMeetingsPerMonth());

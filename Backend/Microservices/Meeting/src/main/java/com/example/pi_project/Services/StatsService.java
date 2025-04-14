@@ -21,13 +21,12 @@ public class StatsService {
 
     // 1. Meetings per month
     public Map<String, Long> getMeetingsPerMonth() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneYearAgo = now.minusYears(1);
-
-        return meetingRepository.findAllByDateBetween(oneYearAgo, now)
+        return meetingRepository.findAll()
                 .stream()
                 .collect(Collectors.groupingBy(
-                        meeting -> meeting.getDate().getMonth().toString() + " " + meeting.getDate().getYear(),
+                        meeting -> String.format("%d-%02d",
+                                meeting.getDate().getYear(),
+                                meeting.getDate().getMonthValue()),
                         Collectors.counting()
                 ));
     }
