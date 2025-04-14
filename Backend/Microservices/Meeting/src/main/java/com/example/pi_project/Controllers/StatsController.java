@@ -35,7 +35,13 @@ public class StatsController {
     public ResponseEntity<Map<String, Long>> getAttendanceStats() {
         return ResponseEntity.ok(statsService.getAttendanceStats());
     }
-/// weird result
+/// Attendance Score
+/// Calculation: (Attended / Total Attendees) × 100
+/// Duration Score
+/// Calculation: (Actual Duration / Ideal Duration) × 100 An hour is the ideal duration
+/// Effectiveness Score (50%):
+/// Weighted combination:
+/// (Attendance Rate × 60%) + (Duration Score × 40%)
     @GetMapping("/meeting-effectiveness/{meetingId}")
     public ResponseEntity<Map<String, Object>> getMeetingEffectiveness(@PathVariable Long meetingId) {
         return ResponseEntity.ok(statsService.getMeetingEffectiveness(meetingId));
@@ -50,7 +56,7 @@ public class StatsController {
     public ResponseEntity<Map<String, Map<String, Object>>> getParticipantEngagement() {
         return ResponseEntity.ok(statsService.getParticipantEngagement());
     }
-
+    ///Effectiveness Formula:(Attendance Rate × 0.6) + (Duration Score × 0.4)
     @GetMapping("/extended-stats")
     public ResponseEntity<Map<String, Object>> getExtendedStatistics() {
         return ResponseEntity.ok(statsService.getExtendedStatistics());

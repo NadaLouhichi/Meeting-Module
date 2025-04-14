@@ -161,34 +161,34 @@ public class StatsService {
 
     // 3. Participant Engagement by Meeting Type
     public Map<String, Map<String, Object>> getParticipantEngagement() {
-        // Get total meetings by type
-        Map<Meeting.MeetingType, Long> totalMeetings = meetingRepository.findAll()
+        // Get all meetings grouped by type
+        Map<Meeting.MeetingType, List<Meeting>> meetingsByType = meetingRepository.findAll()
                 .stream()
-                .collect(Collectors.groupingBy(
-                        Meeting::getType,
-                        Collectors.counting()
-                ));
+                .collect(Collectors.groupingBy(Meeting::getType));
 
-        // Get attended meetings by type
-        Map<String, Long> attendedMeetings = attendeeRepository.findAll()
-                .stream()
-                .filter(a -> a.getAttendanceStatus() == Attendee.AttendanceStatus.ATTENDED)
-                .collect(Collectors.groupingBy(
-                        a -> a.getMeeting().getType().getDisplayName(),
-                        Collectors.counting()
-                ));
-
-        // Calculate engagement rates
         Map<String, Map<String, Object>> engagement = new LinkedHashMap<>();
 
-        totalMeetings.forEach((type, total) -> {
+        meetingsByType.forEach((type, meetings) -> {
             String typeName = type.getDisplayName();
-            long attended = attendedMeetings.getOrDefault(typeName, 0L);
-            double engagementRate = (total > 0) ? (attended * 100.0 / total) : 0;
+
+            // Calculate totals across all meetings of this type
+            long totalExpected = meetings.stream()
+                    .mapToLong(m -> m.getAttendees().size())
+                    .sum();
+
+            long totalAttended = meetings.stream()
+                    .flatMap(m -> m.getAttendees().stream())
+                    .filter(a -> a.getAttendanceStatus() == Attendee.AttendanceStatus.ATTENDED
+                            || a.getAttendanceStatus() == Attendee.AttendanceStatus.CONFIRMED)
+                    .count();
+
+            double engagementRate = (totalExpected > 0) ?
+                    (totalAttended * 100.0 / totalExpected) : 0;
 
             Map<String, Object> stats = new HashMap<>();
-            stats.put("totalMeetings", total);
-            stats.put("totalAttended", attended);
+            stats.put("totalMeetings", meetings.size());
+            stats.put("totalExpected", totalExpected);
+            stats.put("totalAttended", totalAttended);
             stats.put("engagementRate", engagementRate);
             engagement.put(typeName, stats);
         });
