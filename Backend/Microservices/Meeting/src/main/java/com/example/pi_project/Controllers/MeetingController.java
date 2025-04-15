@@ -61,6 +61,11 @@ public class MeetingController {
             return ResponseEntity.notFound().build();
         }
     }
+    @GetMapping("/meetings/{id}")
+    public ResponseEntity<Meeting> getMeetingById(@PathVariable Long id) {
+        Meeting meeting = meetingService.getMeetingById(id);
+        return ResponseEntity.ok(meeting);
+    }
 
     @GetMapping("/export/excel")
     public ResponseEntity<byte[]> exportToExcel() throws IOException {
@@ -75,14 +80,21 @@ public class MeetingController {
     }
 
     @GetMapping("/export/pdf")
-    public ResponseEntity<byte[]> exportToPdf() throws IOException, DocumentException {
-        ByteArrayOutputStream outputStream = exportService.exportMeetingsToPdf();
-        byte[] bytes = outputStream.toByteArray();
+    public ResponseEntity<byte[]> exportToPdf() {
+        try {
+            ByteArrayOutputStream outputStream = exportService.exportMeetingsToPdf();
+            byte[] bytes = outputStream.toByteArray();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("attachment", "meetings.pdf");
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "meetings.pdf");
 
-        return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+            return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(e.getMessage().getBytes());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(("Failed to generate PDF: " + e.getMessage()).getBytes());
+        }
     }
 }

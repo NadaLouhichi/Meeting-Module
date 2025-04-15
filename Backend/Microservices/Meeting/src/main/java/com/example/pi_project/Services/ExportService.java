@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -76,66 +78,98 @@ public class ExportService {
         return outputStream;
     }
 
-    // Export to PDF
+
     public ByteArrayOutputStream exportMeetingsToPdf() throws DocumentException, IOException {
         List<Meeting> meetings = meetingRepository.findAll();
         if (meetings.isEmpty()) {
             throw new IllegalStateException("No meetings available for export.");
         }
 
-        Document document = new Document(PageSize.A4.rotate()); // Use landscape for more columns
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PdfWriter.getInstance(document, outputStream);
+        Document document = null;
+        ByteArrayOutputStream outputStream = null;
 
-        document.open();
+        try {
+            document = new Document(PageSize.A4.rotate());
+            outputStream = new ByteArrayOutputStream();
+            PdfWriter.getInstance(document, outputStream);
 
-        // Create a table with all columns
-        PdfPTable table = new PdfPTable(11); // Number of columns
-        table.setWidthPercentage(100);
-        table.setSpacingBefore(10f);
-        table.setSpacingAfter(10f);
+            document.open();
 
-        // Set column widths (adjust as needed)
-        float[] columnWidths = {2f, 2f, 1f, 2f, 2f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 3f};
-        table.setWidths(columnWidths);
+            // Ensure there's at least some content
+            document.add(new Paragraph("Meeting Export"));
+            document.add(new Paragraph(" ")); // Blank line
 
-        // Add table headers
-        table.addCell("Title");
-        table.addCell("Date");
-        table.addCell("Duration");
-        table.addCell("Location");
-        table.addCell("Street");
-        table.addCell("City");
-        table.addCell("Country");
-        table.addCell("Postal Code");
-        table.addCell("Frequency");
-        table.addCell("Type");
-        table.addCell("Description");
+            PdfPTable table = new PdfPTable(11);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10f);
+            table.setSpacingAfter(10f);
 
-        // Add meeting data to the table
-        for (Meeting meeting : meetings) {
-            // Basic meeting info
-            table.addCell(meeting.getTitle());
-            table.addCell(meeting.getDate().toString());
-            table.addCell(String.valueOf(meeting.getDuration()));
-            table.addCell(meeting.getLocation());
+            float[] columnWidths = {2f, 2f, 1f, 2f, 2f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 3f};
+            table.setWidths(columnWidths);
 
-            // Address info
-            Meeting.Address address = meeting.getAddress();
-            table.addCell(address != null ? address.getStreet() : "");
-            table.addCell(address != null ? address.getCity() : "");
-            table.addCell(address != null ? address.getCountry() : "");
-            table.addCell(address != null ? address.getPostalCode() : "");
+            // Headers
+            addHeaderCell(table, "Title");
+            addHeaderCell(table, "Date");
+            addHeaderCell(table, "Duration");
+            addHeaderCell(table, "Location");
+            addHeaderCell(table, "Street");
+            addHeaderCell(table, "City");
+            addHeaderCell(table, "Country");
+            addHeaderCell(table, "Postal Code");
+            addHeaderCell(table, "Frequency");
+            addHeaderCell(table, "Type");
+            addHeaderCell(table, "Description");
 
-            // Meeting details
-            table.addCell(meeting.getFrequency() != null ? meeting.getFrequency().getDisplayName() : "");
-            table.addCell(meeting.getType() != null ? meeting.getType().getDisplayName() : "");
-            table.addCell(meeting.getDescription() != null ? meeting.getDescription() : "");
+            // Data rows
+            for (Meeting meeting : meetings) {
+                addDataCell(table, safeString(meeting.getTitle()));
+                Object dateObj = meeting.getDate();
+                if (dateObj instanceof Date) {
+                    String formattedDate = new SimpleDateFormat("yyyy-MM-dd HH:mm").format((Date) dateObj);
+                    addDataCell(table, formattedDate);
+                } else {
+                    addDataCell(table, ""); // Or show raw value: safeString(String.valueOf(dateObj))
+                }
+
+                addDataCell(table, meeting.getDuration() != null ?
+                        String.valueOf(meeting.getDuration()) : "");
+                addDataCell(table, safeString(meeting.getLocation()));
+
+                Meeting.Address address = meeting.getAddress();
+                addDataCell(table, address != null ? safeString(address.getStreet()) : "");
+                addDataCell(table, address != null ? safeString(address.getCity()) : "");
+                addDataCell(table, address != null ? safeString(address.getCountry()) : "");
+                addDataCell(table, address != null ? safeString(address.getPostalCode()) : "");
+
+                addDataCell(table, meeting.getFrequency() != null ?
+                        safeString(meeting.getFrequency().getDisplayName()) : "");
+                addDataCell(table, meeting.getType() != null ?
+                        safeString(meeting.getType().getDisplayName()) : "");
+                addDataCell(table, safeString(meeting.getDescription()));
+            }
+
+            document.add(table);
+
+            return outputStream;
+        } finally {
+            if (document != null && document.isOpen()) {
+                document.close();
+            }
         }
+    }
 
-        document.add(table);
-        document.close();
+    private void addHeaderCell(PdfPTable table, String text) {
+        PdfPCell cell = new PdfPCell(new Phrase(text));
+        cell.setBackgroundColor(new BaseColor(220, 220, 220));
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        table.addCell(cell);
+    }
 
-        return outputStream;
+    private void addDataCell(PdfPTable table, String text) {
+        table.addCell(new Phrase(text != null ? text : ""));
+    }
+
+    private String safeString(String input) {
+        return input != null ? input : "";
     }
 }

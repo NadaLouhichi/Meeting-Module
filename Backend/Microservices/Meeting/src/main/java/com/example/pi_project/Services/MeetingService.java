@@ -75,4 +75,9 @@ public class MeetingService {
         meeting.setType(meetingDetails.getType());
         meeting.setDescription(meetingDetails.getDescription());
     }
+    public Meeting getMeetingById(Long id) {
+        return meetingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with id: " + id));
+    }
+
 }

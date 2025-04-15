@@ -51,3 +51,4 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
     List<Meeting> findByTitleContainingIgnoreCase(String title);
     List<Meeting> findByLocationContainingIgnoreCase(String location); }
 
+
