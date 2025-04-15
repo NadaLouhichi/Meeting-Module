@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -26,4 +27,14 @@ public interface AttendeeRepository extends JpaRepository<Attendee, Long> {
     @Query("SELECT FUNCTION('DATE_FORMAT', m.date, '%Y-%m') as month, COUNT(m) as count " +
             "FROM Meeting m GROUP BY FUNCTION('DATE_FORMAT', m.date, '%Y-%m')")
     List<Object[]> countMeetingsByMonth();
+
+    @Query("SELECT a.title, COUNT(a) FROM Attendee a GROUP BY a.title")
+    Map<Attendee.Title, Long> countByTitle();
+
+    @Query("SELECT SUBSTRING(a.email, POSITION('@' IN a.email) + 1) as domain, COUNT(a) " +
+            "FROM Attendee a GROUP BY SUBSTRING(a.email, POSITION('@' IN a.email) + 1)")
+    Map<String, Long> countByEmailDomain();
+
+    @Query("SELECT a.attendanceType, COUNT(a) FROM Attendee a GROUP BY a.attendanceType")
+    Map<Attendee.AttendanceType, Long> countByAttendanceType();
 }
