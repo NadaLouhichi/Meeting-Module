@@ -137,9 +137,18 @@ public class ExportService {
             for (Meeting meeting : meetings) {
                 table.addCell(createCell(meeting.getTitle(), normalFont));
 
+                // ✅ Corrected date handling
                 Object dateObj = meeting.getDate();
-                String formattedDate = (dateObj instanceof Date) ?
-                        new SimpleDateFormat("yyyy-MM-dd HH:mm").format((Date) dateObj) : "";
+                String formattedDate = "";
+                if (dateObj instanceof Date) {
+                    formattedDate = new SimpleDateFormat("yyyy-MM-dd HH:mm").format((Date) dateObj);
+                } else if (dateObj instanceof java.time.LocalDateTime) {
+                    formattedDate = ((java.time.LocalDateTime) dateObj)
+                            .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                } else if (dateObj instanceof java.time.LocalDate) {
+                    formattedDate = ((java.time.LocalDate) dateObj)
+                            .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                }
                 table.addCell(createCell(formattedDate, normalFont));
 
                 table.addCell(createCell(
