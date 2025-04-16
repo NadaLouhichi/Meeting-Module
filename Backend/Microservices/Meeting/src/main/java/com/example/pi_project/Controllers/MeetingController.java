@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.*;
 import org.springframework.web.bind.annotation.*;
 import com.example.pi_project.Repositories.*;
+
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.*;
@@ -83,18 +85,24 @@ public class MeetingController {
     public ResponseEntity<byte[]> exportToPdf() {
         try {
             ByteArrayOutputStream outputStream = exportService.exportMeetingsToPdf();
-            byte[] bytes = outputStream.toByteArray();
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", "meetings.pdf");
+            headers.setContentDisposition(
+                    ContentDisposition.builder("attachment")
+                            .filename("meetings_export.pdf")
+                            .build()
+            );
+            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
-            return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+            return new ResponseEntity<>(outputStream.toByteArray(), headers, HttpStatus.OK);
+
         } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(e.getMessage().getBytes());
-        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                    .body(("No meetings found for export").getBytes(StandardCharsets.UTF_8));
+        } catch (DocumentException | IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(("Failed to generate PDF: " + e.getMessage()).getBytes());
+                    .body(("PDF generation failed: " + e.getMessage()).getBytes(StandardCharsets.UTF_8));
         }
     }
 }

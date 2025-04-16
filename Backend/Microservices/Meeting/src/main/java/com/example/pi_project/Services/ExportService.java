@@ -3,6 +3,7 @@ package com.example.pi_project.Services;
 import com.example.pi_project.Entities.*;
 import com.example.pi_project.Repositories.MeetingRepository;
 import com.itextpdf.text.*;
+import com.itextpdf.text.Font;
 import com.itextpdf.text.pdf.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -85,88 +86,101 @@ public class ExportService {
             throw new IllegalStateException("No meetings available for export.");
         }
 
-        Document document = null;
-        ByteArrayOutputStream outputStream = null;
+        Document document = new Document(PageSize.A4.rotate());
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        // Font definitions
+        Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
+        Font normalFont = new Font(Font.FontFamily.HELVETICA, 10);
+        BaseColor headerBgColor = new BaseColor(66, 139, 202);
 
         try {
-            document = new Document(PageSize.A4.rotate());
-            outputStream = new ByteArrayOutputStream();
             PdfWriter.getInstance(document, outputStream);
 
+            document.addTitle("Meetings Export");
+            document.addCreator("Your Application Name");
             document.open();
 
-            // Ensure there's at least some content
-            document.add(new Paragraph("Meeting Export"));
-            document.add(new Paragraph(" ")); // Blank line
+            // Title
+            Paragraph title = new Paragraph("Meetings Export Report", new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20f);
+            document.add(title);
 
+            // Generation date
+            Paragraph generatedOn = new Paragraph("Generated on: " + new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()), normalFont);
+            generatedOn.setAlignment(Element.ALIGN_RIGHT);
+            generatedOn.setSpacingAfter(15f);
+            document.add(generatedOn);
+
+            // Table
             PdfPTable table = new PdfPTable(11);
             table.setWidthPercentage(100);
             table.setSpacingBefore(10f);
             table.setSpacingAfter(10f);
+            table.setWidths(new float[]{2f, 2f, 1f, 2f, 2f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 3f});
 
-            float[] columnWidths = {2f, 2f, 1f, 2f, 2f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 3f};
-            table.setWidths(columnWidths);
-
-            // Headers
-            addHeaderCell(table, "Title");
-            addHeaderCell(table, "Date");
-            addHeaderCell(table, "Duration");
-            addHeaderCell(table, "Location");
-            addHeaderCell(table, "Street");
-            addHeaderCell(table, "City");
-            addHeaderCell(table, "Country");
-            addHeaderCell(table, "Postal Code");
-            addHeaderCell(table, "Frequency");
-            addHeaderCell(table, "Type");
-            addHeaderCell(table, "Description");
+            // Header row
+            String[] headers = {
+                    "Title", "Date", "Duration", "Location", "Street",
+                    "City", "Country", "Postal Code", "Frequency", "Type", "Description"
+            };
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setBackgroundColor(headerBgColor);
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setPadding(5f);
+                table.addCell(cell);
+            }
 
             // Data rows
             for (Meeting meeting : meetings) {
-                addDataCell(table, safeString(meeting.getTitle()));
-                Object dateObj = meeting.getDate();
-                if (dateObj instanceof Date) {
-                    String formattedDate = new SimpleDateFormat("yyyy-MM-dd HH:mm").format((Date) dateObj);
-                    addDataCell(table, formattedDate);
-                } else {
-                    addDataCell(table, ""); // Or show raw value: safeString(String.valueOf(dateObj))
-                }
+                table.addCell(createCell(meeting.getTitle(), normalFont));
 
-                addDataCell(table, meeting.getDuration() != null ?
-                        String.valueOf(meeting.getDuration()) : "");
-                addDataCell(table, safeString(meeting.getLocation()));
+                Object dateObj = meeting.getDate();
+                String formattedDate = (dateObj instanceof Date) ?
+                        new SimpleDateFormat("yyyy-MM-dd HH:mm").format((Date) dateObj) : "";
+                table.addCell(createCell(formattedDate, normalFont));
+
+                table.addCell(createCell(
+                        meeting.getDuration() != null ? String.valueOf(meeting.getDuration()) : "", normalFont));
+                table.addCell(createCell(meeting.getLocation(), normalFont));
 
                 Meeting.Address address = meeting.getAddress();
-                addDataCell(table, address != null ? safeString(address.getStreet()) : "");
-                addDataCell(table, address != null ? safeString(address.getCity()) : "");
-                addDataCell(table, address != null ? safeString(address.getCountry()) : "");
-                addDataCell(table, address != null ? safeString(address.getPostalCode()) : "");
+                table.addCell(createCell(address != null ? address.getStreet() : "", normalFont));
+                table.addCell(createCell(address != null ? address.getCity() : "", normalFont));
+                table.addCell(createCell(address != null ? address.getCountry() : "", normalFont));
+                table.addCell(createCell(address != null ? address.getPostalCode() : "", normalFont));
 
-                addDataCell(table, meeting.getFrequency() != null ?
-                        safeString(meeting.getFrequency().getDisplayName()) : "");
-                addDataCell(table, meeting.getType() != null ?
-                        safeString(meeting.getType().getDisplayName()) : "");
-                addDataCell(table, safeString(meeting.getDescription()));
+                table.addCell(createCell(
+                        meeting.getFrequency() != null ? meeting.getFrequency().getDisplayName() : "", normalFont));
+                table.addCell(createCell(
+                        meeting.getType() != null ? meeting.getType().getDisplayName() : "", normalFont));
+                table.addCell(createCell(meeting.getDescription(), normalFont));
             }
 
             document.add(table);
 
-            return outputStream;
+            // Footer
+            Paragraph footer = new Paragraph("Total meetings: " + meetings.size(), normalFont);
+            footer.setAlignment(Element.ALIGN_RIGHT);
+            footer.setSpacingBefore(15f);
+            document.add(footer);
+
         } finally {
             if (document != null && document.isOpen()) {
                 document.close();
             }
         }
+
+        return outputStream;
     }
 
-    private void addHeaderCell(PdfPTable table, String text) {
-        PdfPCell cell = new PdfPCell(new Phrase(text));
-        cell.setBackgroundColor(new BaseColor(220, 220, 220));
-        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        table.addCell(cell);
-    }
-
-    private void addDataCell(PdfPTable table, String text) {
-        table.addCell(new Phrase(text != null ? text : ""));
+    private PdfPCell createCell(String content, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(safeString(content), font));
+        cell.setPadding(4f);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cell;
     }
 
     private String safeString(String input) {
