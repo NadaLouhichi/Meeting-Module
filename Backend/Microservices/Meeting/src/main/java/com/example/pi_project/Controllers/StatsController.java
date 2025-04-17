@@ -8,9 +8,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/stats")
-@CrossOrigin(origins = "http://localhost:4200")
+
 public class StatsController {
 
     @Autowired

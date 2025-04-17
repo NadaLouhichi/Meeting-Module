@@ -80,7 +80,7 @@ public class MeetingController {
 
         return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
     }
-
+    @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/export/pdf")
     public ResponseEntity<byte[]> exportToPdf() {
         try {
